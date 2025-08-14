@@ -10,7 +10,10 @@ class EmbeddingService:
     async def generate_embedding(self, text: str) -> Optional[List[float]]:
         try:
             if not text or not text.strip():
+                print(f"[EMBEDDING DEBUG] Empty or whitespace-only text provided")
                 return None
+            
+            print(f"[EMBEDDING DEBUG] Generating embedding for text length: {len(text)}")
             
             # Use Cohere's embed API
             response = self.client.embed(
@@ -19,15 +22,26 @@ class EmbeddingService:
                 input_type="search_document"  # For document embeddings
             )
             
-            # Cohere embeddings are 1024 dimensions, pad to 1536 for compatibility
+            print(f"[EMBEDDING DEBUG] Cohere API response received")
+            
+            # Get the original embedding
             embedding = response.embeddings[0]
+            original_length = len(embedding)
+            print(f"[EMBEDDING DEBUG] Original embedding length: {original_length}")
+            
+            # Cohere embeddings are 1024 dimensions, pad to 1536 for compatibility
             # Pad with zeros to reach 1536 dimensions
             while len(embedding) < 1536:
                 embedding.append(0.0)
             
-            return embedding[:1536]  # Ensure exactly 1536 dimensions
+            final_embedding = embedding[:1536]  # Ensure exactly 1536 dimensions
+            print(f"[EMBEDDING DEBUG] Final embedding length: {len(final_embedding)}")
+            
+            return final_embedding
         except Exception as e:
-            print(f"Error generating embedding: {str(e)}")
+            print(f"[EMBEDDING ERROR] Error generating embedding: {str(e)}")
+            print(f"[EMBEDDING ERROR] Text length: {len(text) if text else 'None'}")
+            print(f"[EMBEDDING ERROR] Text preview: {text[:100] if text else 'None'}...")
             return None
 
     async def generate_embeddings_batch(self, texts: List[str]) -> List[Optional[List[float]]]:

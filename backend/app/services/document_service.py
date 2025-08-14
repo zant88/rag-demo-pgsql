@@ -163,13 +163,17 @@ class DocumentService:
             for i, chunk_text in enumerate(chunks):
                 try:
                     print(f"[DEBUG] Processing chunk {i+1}/{len(chunks)}, length: {len(chunk_text)}")
+                    print(f"[DEBUG] Chunk {i} preview: {chunk_text[:200]}...")
                     
                     # Generate embedding
                     embedding = await self.embedding_service.generate_embedding(chunk_text)
                     
                     if not embedding or len(embedding) == 0:
                         print(f"[WARNING] Empty embedding generated for chunk {i}")
+                        print(f"[WARNING] Chunk text was: {chunk_text[:100]}...")
                         continue
+                    
+                    print(f"[DEBUG] Successfully generated embedding for chunk {i}, embedding length: {len(embedding)}")
                     
                     # Create chunk record
                     chunk = Chunk(
