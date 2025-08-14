@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Agentic RAG Knowledge App"
     VERSION: str = "1.0.0"
     DEBUG: bool = False
+    SECRET_KEY: str = "your-secret-key-here"
+    ENVIRONMENT: str = "development"
     
     # API settings
     API_V1_STR: str = "/api/v1"

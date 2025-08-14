@@ -33,6 +33,7 @@ services:
       - GROQ_API_KEY=${GROQ_API_KEY}
       - DEBUG=true
       - ENVIRONMENT=development
+      - SECRET_KEY=your-secret-key-for-development
     ports:
       - "8000:8000"
     volumes:
