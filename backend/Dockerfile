@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
-COPY requirements.txt .
+COPY backend/requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
@@ -25,12 +25,13 @@ RUN pip install alembic
 # Download spaCy model
 RUN python -m spacy download en_core_web_sm
 
-# Copy application code
-COPY . .
+# Copy application code from backend directory
+COPY backend/ .
 
 # Copy Alembic configuration and migrations from project root
-COPY ../alembic.ini ./
-COPY ../migrations ./migrations/
+# Note: These files need to be copied from the Docker build context
+COPY alembic.ini ./
+COPY migrations ./migrations/
 
 # Create uploads directory
 RUN mkdir -p uploads

@@ -20,8 +20,8 @@ services:
   # FastAPI Backend
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./backend/Dockerfile
     container_name: rag-backend
     environment:
       - DATABASE_HOST=postgres
