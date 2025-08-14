@@ -43,3 +43,12 @@ Thumbs.db
 frontend/.next/
 backend/uploads/
 
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Database files
+*.sqlite
+*.db
+rag_knowledge_db.sqlite
+

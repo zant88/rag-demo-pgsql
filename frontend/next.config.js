@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'standalone',
   images: {
     domains: [],
   },
@@ -8,7 +9,9 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:8000/api/:path*', // Proxy to FastAPI backend
+        destination: process.env.NODE_ENV === 'production' 
+          ? 'http://backend:8000/api/:path*' 
+          : 'http://localhost:8000/api/:path*', // Proxy to FastAPI backend
       },
     ];
   },

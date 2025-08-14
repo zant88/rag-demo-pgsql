@@ -2,6 +2,34 @@
 
 A Retrieval-Augmented Generation (RAG) knowledge-based application with smart document upload and semantic search capabilities.
 
+## 🐳 Quick Start with Docker (Recommended)
+
+The easiest way to run this application is using Docker:
+
+```bash
+# 1. Clone the repository
+git clone <repository-url>
+cd doc-learning-2
+
+# 2. Start with Docker (this will handle everything)
+./docker-start.sh
+```
+
+That's it! The script will:
+- Check if Docker is running
+- Build all necessary images
+- Set up the database with pgvector
+- Start all services
+
+**Access the application:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API Documentation: http://localhost:8000/docs
+
+> **Note:** You'll need to add your API keys to the `.env` file for full functionality. See [Docker Setup Guide](README-Docker.md) for details.
+
+## 📋 Manual Setup (Alternative)
+
 ## Features
 
 - **Document Upload & Chunking**: Resumable uploads with chunking for large files (PDF, DOCX, etc.)
