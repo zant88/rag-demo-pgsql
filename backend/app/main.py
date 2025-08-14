@@ -1,11 +1,24 @@
 """Main FastAPI application entry point."""
 
-from fastapi import FastAPI
+import logging
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 from app.core.config import settings
 from app.api.v1.api import api_router
+
+# Configure logging based on DEBUG setting
+if settings.DEBUG:
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    logger = logging.getLogger(__name__)
+    logger.info("Debug mode enabled - detailed logging active")
+else:
+    logging.basicConfig(level=logging.INFO)
 
 
 def create_app():
@@ -14,8 +27,25 @@ def create_app():
         title=settings.PROJECT_NAME,
         version=settings.VERSION,
         description="Agentic RAG-Based Knowledge App with Smart Upload and Semantic Search",
-        openapi_url=f"{settings.API_V1_STR}/openapi.json"
+        openapi_url=f"{settings.API_V1_STR}/openapi.json",
+        debug=settings.DEBUG
     )
+    
+    # Add global exception handler for development debugging
+    if settings.DEBUG:
+        @app.exception_handler(Exception)
+        async def debug_exception_handler(request: Request, exc: Exception):
+            import traceback
+            logger.error(f"Unhandled exception: {exc}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "detail": str(exc),
+                    "type": type(exc).__name__,
+                    "traceback": traceback.format_exc() if settings.DEBUG else None
+                }
+            )
     
     # Set up CORS
     app.add_middleware(

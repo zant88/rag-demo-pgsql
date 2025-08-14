@@ -45,7 +45,13 @@ echo "🚀 Starting RAG Knowledge App Backend..."\n\
 echo "🔧 Initializing database..."\n\
 python init_db.py\n\
 echo "🌟 Starting FastAPI server..."\n\
-exec uvicorn app.main:app --host 0.0.0.0 --port 8000' > /app/start.sh && \
+if [ "$DEBUG" = "true" ] || [ "$ENVIRONMENT" = "development" ]; then\n\
+  echo "📝 Development mode: Hot reloading enabled"\n\
+  exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --log-level debug\n\
+else\n\
+  echo "🚀 Production mode: Standard startup"\n\
+  exec uvicorn app.main:app --host 0.0.0.0 --port 8000\n\
+fi' > /app/start.sh && \
     chmod +x /app/start.sh
 
 # Run the startup script

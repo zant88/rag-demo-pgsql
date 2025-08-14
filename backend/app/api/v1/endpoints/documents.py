@@ -2,6 +2,7 @@
 
 import os
 import uuid
+import logging
 from typing import List, Optional
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
@@ -11,6 +12,9 @@ from app.core.database import get_db
 from app.models.document import Document
 from app.schemas.document import DocumentCreate, DocumentResponse, DocumentListResponse
 from app.services.document_service import DocumentService
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 # Create router
 router = APIRouter()
@@ -32,7 +36,17 @@ async def upload_document(
     db: Session = Depends(get_db)
 ):
     """Upload a document file for processing."""
+    logger.info(f"📤 Starting document upload: {file.filename}")
+    logger.debug(f"File details - Size: {getattr(file, 'size', 'unknown')}, Content-Type: {file.content_type}, Client ID: {client_id}")
+    
     try:
+        # Validate file
+        if not file.filename:
+            logger.error("❌ No filename provided")
+            raise HTTPException(status_code=400, detail="No filename provided")
+        
+        logger.debug(f"📋 Creating document record for: {file.filename}")
+        
         # Create document record
         document_data = DocumentCreate(
             original_filename=file.filename,
@@ -42,25 +56,43 @@ async def upload_document(
         
         document_service = DocumentService(db)
         document = document_service.create_document(document_data)
+        logger.info(f"✅ Document record created with ID: {document.id}")
         
         # Save file
         file_extension = os.path.splitext(file.filename)[1] if file.filename else ""
         file_path = os.path.join(settings.UPLOAD_FOLDER, f"{document.id}{file_extension}")
+        logger.debug(f"💾 Saving file to: {file_path}")
+        
+        # Ensure upload directory exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         
         # Save file content
-        with open(file_path, "wb") as buffer:
-            content = await file.read()
-            buffer.write(content)
+        try:
+            with open(file_path, "wb") as buffer:
+                content = await file.read()
+                buffer.write(content)
+                logger.info(f"✅ File saved successfully: {len(content)} bytes written")
+        except Exception as file_error:
+            logger.error(f"❌ Failed to save file: {str(file_error)}")
+            raise HTTPException(status_code=500, detail=f"Failed to save file: {str(file_error)}")
         
         # Update document with file path
+        logger.debug(f"🔄 Updating document path in database")
         document_service.update_document_path(document.id, file_path)
         
         # Process document in background, pass client_id for websocket notification
+        logger.info(f"🚀 Starting background processing for document {document.id}")
         background_tasks.add_task(document_service.process_document, document.id, client_id)
         
+        logger.info(f"🎉 Upload completed successfully for document {document.id}: {file.filename}")
         return document
     
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
+        logger.error(f"❌ Unexpected error during upload: {str(e)}")
+        logger.exception("Full traceback:")
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 
