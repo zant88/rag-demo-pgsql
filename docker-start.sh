@@ -38,8 +38,13 @@ print_status "🚀 Starting RAG Knowledge App with Docker..."
 # Check if Docker is running
 if ! docker info > /dev/null 2>&1; then
     print_error "Docker is not running. Please start Docker Desktop and try again."
-    print_status "On macOS: Open Docker Desktop application"
-    print_status "On Linux: sudo systemctl start docker"
+    echo
+    print_status "📋 To start Docker:"
+    print_status "   • On macOS: Open Docker Desktop application from Applications"
+    print_status "   • On Linux: sudo systemctl start docker"
+    print_status "   • On Windows: Start Docker Desktop from Start Menu"
+    echo
+    print_status "💡 After starting Docker, wait a moment for it to fully initialize, then run this script again."
     exit 1
 fi
 

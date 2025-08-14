@@ -124,7 +124,16 @@ docker compose exec postgres psql -U apple -d rag_knowledge_db -c "\dt"
 
 ### Common Issues
 
-1. **Port Already in Use**
+1. **Docker Not Running**
+   ```bash
+   # Error: Cannot connect to the Docker daemon
+   # Solution: Start Docker Desktop and wait for it to fully initialize
+   ```
+   - **macOS**: Open Docker Desktop from Applications
+   - **Windows**: Start Docker Desktop from Start Menu
+   - **Linux**: `sudo systemctl start docker`
+
+2. **Port Already in Use**
    ```bash
    # Check what's using the port
    lsof -i :3000  # or :8000, :5432
@@ -132,7 +141,15 @@ docker compose exec postgres psql -U apple -d rag_knowledge_db -c "\dt"
    # Kill the process or change ports in docker-compose.yml
    ```
 
-2. **Database Connection Issues**
+3. **Frontend Build Issues (Missing public directory)**
+   ```bash
+   # If you get "public: not found" error
+   # This is fixed in the Dockerfile, but if issues persist:
+   mkdir -p frontend/public
+   docker compose build --no-cache frontend
+   ```
+
+4. **Database Connection Issues**
    ```bash
    # Check if PostgreSQL is healthy
    docker-compose ps
@@ -141,15 +158,16 @@ docker compose exec postgres psql -U apple -d rag_knowledge_db -c "\dt"
    docker-compose logs postgres
    ```
 
-3. **API Keys Not Working**
+5. **API Keys Not Working**
    - Ensure your `.env` file is in the project root
    - Verify API keys are valid and have sufficient credits
    - Restart services after updating environment variables
 
-4. **Frontend Build Issues**
+6. **Build Cache Issues**
    ```bash
-   # Clear Next.js cache and rebuild
-   docker-compose build --no-cache frontend
+   # Clear Docker build cache and rebuild
+   docker compose build --no-cache
+   docker system prune -f
    ```
 
 ### Health Checks
