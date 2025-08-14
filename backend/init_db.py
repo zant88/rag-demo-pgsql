@@ -6,12 +6,11 @@ This script creates all tables and runs any necessary setup.
 
 import sys
 import time
+import subprocess
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 
 from app.core.config import settings
-from app.core.database import Base
-from app.models import document, chunk, knowledge  # Import all models
 
 
 def wait_for_db(max_retries=30, delay=2):
@@ -36,14 +35,38 @@ def wait_for_db(max_retries=30, delay=2):
     return engine
 
 
-def create_tables(engine):
-    """Create all database tables."""
+def run_alembic_migrations():
+    """Run Alembic migrations to set up database schema."""
     try:
-        print("🔧 Creating database tables...")
-        Base.metadata.create_all(bind=engine)
-        print("✅ All tables created successfully!")
+        print("🔧 Running Alembic migrations...")
+        
+        # In Docker, alembic.ini and migrations are in the current working directory
+        import os
+        current_dir = os.getcwd()
+        print(f"Running migrations from: {current_dir}")
+        
+        # Run alembic upgrade head
+        result = subprocess.run(
+            ["alembic", "upgrade", "head"],
+            cwd=current_dir,
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
+        print("✅ Database migrations completed successfully!")
+        if result.stdout:
+            print(f"Migration output: {result.stdout}")
+            
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Error running migrations: {e}")
+        if e.stdout:
+            print(f"stdout: {e.stdout}")
+        if e.stderr:
+            print(f"stderr: {e.stderr}")
+        sys.exit(1)
     except Exception as e:
-        print(f"❌ Error creating tables: {e}")
+        print(f"❌ Unexpected error during migration: {e}")
         sys.exit(1)
 
 
@@ -72,7 +95,7 @@ if __name__ == "__main__":
     # Set up pgvector extension
     setup_pgvector_extension(engine)
     
-    # Create all tables
-    create_tables(engine)
+    # Run Alembic migrations
+    run_alembic_migrations()
     
     print("🎉 Database initialization completed!")

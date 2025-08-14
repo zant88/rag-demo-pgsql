@@ -67,6 +67,7 @@ fi
 print_status "🔧 Building Docker images..."
 if docker compose build; then
     print_success "✅ Docker images built successfully!"
+    print_status "📊 Note: Database migrations will be automatically run during container startup."
 else
     print_error "❌ Failed to build Docker images. Check the logs above."
     exit 1

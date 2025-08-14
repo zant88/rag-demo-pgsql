@@ -19,11 +19,18 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install Alembic for database migrations
+RUN pip install alembic
+
 # Download spaCy model
 RUN python -m spacy download en_core_web_sm
 
 # Copy application code
 COPY . .
+
+# Copy Alembic configuration and migrations from project root
+COPY ../alembic.ini ./
+COPY ../migrations ./migrations/
 
 # Create uploads directory
 RUN mkdir -p uploads

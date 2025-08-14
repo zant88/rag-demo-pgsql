@@ -10,10 +10,17 @@ import os
 from dotenv import load_dotenv
 
 # Set up path to import backend.app.core.config
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend')))
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend', 'app', 'core')))
-# Load .env file from backend directory
-load_dotenv(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend', '.env')))
+# In Docker, we're running from the backend directory
+if os.path.exists('/app/app'):
+    # Docker environment - we're in /app (backend directory)
+    sys.path.append('/app')
+    sys.path.append('/app/app/core')
+    load_dotenv('/app/.env')
+else:
+    # Local development environment
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend')))
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend', 'app', 'core')))
+    load_dotenv(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend', '.env')))
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
